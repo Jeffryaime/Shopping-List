@@ -53,9 +53,8 @@ form input {
   outline: none;
 }
 
-form input:focus,
-  #filter-container input:focus {
-    border-color: #4caf50;
+form input:focus {
+  border-color: #4caf50;
 }
 
 form .btn-add {
@@ -75,9 +74,6 @@ form .btn-add:hover {
 
 #filter-container {
   margin-bottom: 20px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
 }
 
 #filter-container input {
@@ -92,7 +88,7 @@ form .btn-add:hover {
 }
 
 #filter-container input:focus {
-  border-bottom: 2px solid #4caf50; /* Highlight underline on focus */
+  border-bottom: 2px solid #4caf50;
 }
 
 .list-container {
@@ -113,11 +109,18 @@ form .btn-add:hover {
   font-size: 16px;
   transition: transform 0.2s, background 0.2s;
   animation: fadeIn 0.3s ease;
+  cursor: pointer;
 }
 
 .list-container li:hover {
   background-color: #f1f1f1;
   transform: translateY(-2px);
+}
+
+.list-container li.purchased {
+  text-decoration: line-through;
+  color: #aaa;
+  background-color: #f1f1f1;
 }
 
 .list-container li button {
@@ -161,20 +164,63 @@ form .btn-add:hover {
   }
 }
 
-/* Toast Feedback */
-.toast {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background-color: #4caf50;
-  color: white;
-  padding: 10px 20px;
-  border-radius: 5px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  opacity: 0.9;
-  z-index: 1000;
+/* Dark Mode Styles */
+body.dark-mode {
+  background-color: #121212;
+  color: #ffffff;
 }
 
-.toast-error {
-  background-color: #e74c3c;
+body.dark-mode .app-container {
+  background-color: #1e1e1e;
+  box-shadow: none;
+}
+
+body.dark-mode .btn-add {
+  background-color: #444;
+}
+
+body.dark-mode .btn-add:hover {
+  background-color: #555;
+}
+
+body.dark-mode .btn-clear {
+  background-color: #c0392b;
+}
+
+body.dark-mode #filter-container input {
+  background-color: #1e1e1e;
+  color: #ffffff;
+  border-bottom: 2px solid #555;
+}
+
+body.dark-mode #filter-container input:focus {
+  border-bottom-color: #4caf50;
+}
+
+body.dark-mode .list-container li {
+  background-color: #333;
+  color: #ddd;
+}
+
+body.dark-mode .list-container li.purchased {
+  text-decoration: line-through;
+  color: #888;
+}
+
+body.dark-mode .list-container li:hover {
+  background-color: #444;
+}
+
+body.dark-mode .btn-toggle {
+  background-color: #444;
+  color: #fff;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+body.dark-mode .btn-toggle:hover {
+  background-color: #555;
 }

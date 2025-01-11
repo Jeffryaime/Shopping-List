@@ -3,6 +3,23 @@ const itemInput = document.getElementById('item-input');
 const itemList = document.getElementById('item-list');
 const clearButton = document.getElementById('clear');
 const filterInput = document.getElementById('filter');
+const darkModeToggle = document.getElementById('dark-mode-toggle');
+
+// Check if dark mode was previously enabled
+if (localStorage.getItem('darkMode') === 'enabled') {
+  document.body.classList.add('dark-mode');
+}
+
+darkModeToggle.addEventListener('click', () => {
+  document.body.classList.toggle('dark-mode');
+
+  // Save the user's preference
+  if (document.body.classList.contains('dark-mode')) {
+    localStorage.setItem('darkMode', 'enabled');
+  } else {
+    localStorage.setItem('darkMode', 'disabled');
+  }
+});
 
 function displayItems() {
   const items = getItemsFromStorage();
@@ -15,45 +32,65 @@ function onAddItemSubmit(e) {
 
   const newItem = itemInput.value.trim();
   if (newItem === '') {
-    showToast('Please enter an item.', 'error');
+    alert('Please enter an item.');
     return;
   }
 
   if (isDuplicate(newItem)) {
-    showToast('This item already exists!', 'error');
+    alert('This item already exists!');
     return;
   }
 
-  addItemToDOM(newItem);
-  saveToStorage(newItem);
-  showToast('Item added successfully!');
+  addItemToDOM({ name: newItem, purchased: false });
+  saveToStorage({ name: newItem, purchased: false });
   itemInput.value = '';
   updateUI();
 }
 
 function addItemToDOM(item) {
   const li = document.createElement('li');
-  li.textContent = item;
+  li.textContent = item.name;
+  if (item.purchased) li.classList.add('purchased');
 
   const deleteButton = document.createElement('button');
   deleteButton.innerHTML = '<i class="fa-solid fa-trash"></i>';
-  deleteButton.addEventListener('click', () => removeItem(li, item));
+  deleteButton.addEventListener('click', () => removeItem(li, item.name));
 
   li.appendChild(deleteButton);
   itemList.appendChild(li);
 }
 
-function removeItem(element, item) {
+function togglePurchased(e) {
+  if (e.target.tagName === 'LI') {
+    const itemName = e.target.textContent;
+    e.target.classList.toggle('purchased');
+    togglePurchasedInStorage(itemName);
+  }
+}
+
+function togglePurchasedInStorage(itemName) {
+  const items = getItemsFromStorage();
+  const updatedItems = items.map((item) =>
+    item.name === itemName ? { ...item, purchased: !item.purchased } : item
+  );
+  localStorage.setItem('items', JSON.stringify(updatedItems));
+}
+
+
+function removeItem(element, itemName) {
   element.remove();
-  removeFromStorage(item);
-  showToast('Item removed successfully!');
+  removeFromStorage(itemName);
   updateUI();
+}
+
+function removeFromStorage(itemName) {
+  const items = getItemsFromStorage().filter((item) => item.name !== itemName);
+  localStorage.setItem('items', JSON.stringify(items));
 }
 
 function clearItems() {
   itemList.innerHTML = '';
   localStorage.removeItem('items');
-  showToast('All items cleared!', 'error');
   updateUI();
 }
 
@@ -75,31 +112,16 @@ function saveToStorage(item) {
   localStorage.setItem('items', JSON.stringify(items));
 }
 
-function removeFromStorage(item) {
-  const items = getItemsFromStorage().filter((i) => i !== item);
-  localStorage.setItem('items', JSON.stringify(items));
-}
-
-function isDuplicate(item) {
-  return getItemsFromStorage().includes(item);
+function isDuplicate(itemName) {
+  return getItemsFromStorage().some((item) => item.name === itemName);
 }
 
 function updateUI() {
   clearButton.style.display = itemList.children.length ? 'block' : 'none';
 }
 
-function showToast(message, type = 'success') {
-  const toast = document.createElement('div');
-  toast.textContent = message;
-  toast.className = `toast ${type === 'error' ? 'toast-error' : ''}`;
-  document.body.appendChild(toast);
-
-  setTimeout(() => {
-    toast.remove();
-  }, 2000);
-}
-
 itemForm.addEventListener('submit', onAddItemSubmit);
+itemList.addEventListener('click', togglePurchased);
 clearButton.addEventListener('click', clearItems);
 filterInput.addEventListener('input', filterItems);
 document.addEventListener('DOMContentLoaded', displayItems);
