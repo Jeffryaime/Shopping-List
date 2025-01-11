@@ -11,15 +11,31 @@ if (localStorage.getItem('darkMode') === 'enabled') {
 }
 
 darkModeToggle.addEventListener('click', () => {
-  document.body.classList.toggle('dark-mode');
+  const isDarkMode = document.body.classList.toggle('dark-mode');
 
-  // Save the user's preference
-  if (document.body.classList.contains('dark-mode')) {
-    localStorage.setItem('darkMode', 'enabled');
+  // Update the button text and icon dynamically
+  if (isDarkMode) {
+    darkModeToggle.innerHTML = '<i class="fa-solid fa-sun"></i> Light Mode';
+    localStorage.setItem('darkMode', 'enabled'); // Save to localStorage
   } else {
-    localStorage.setItem('darkMode', 'disabled');
+    darkModeToggle.innerHTML = '<i class="fa-solid fa-moon"></i> Dark Mode';
+    localStorage.setItem('darkMode', 'disabled'); // Save to localStorage
   }
 });
+
+// Ensure the correct text and icon are displayed on page load
+if (localStorage.getItem('darkMode') === 'enabled') {
+  document.body.classList.add('dark-mode');
+  darkModeToggle.innerHTML = '<i class="fa-solid fa-sun"></i> Light Mode';
+} else {
+  darkModeToggle.innerHTML = '<i class="fa-solid fa-moon"></i> Dark Mode';
+}
+
+// Ensure the correct icon is displayed on page load
+if (localStorage.getItem('darkMode') === 'enabled') {
+  const icon = darkModeToggle.querySelector('i');
+  icon.className = 'fa-solid fa-sun'; // Set to sun icon
+}
 
 function displayItems() {
   const items = getItemsFromStorage();
