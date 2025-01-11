@@ -76,7 +76,6 @@ function togglePurchasedInStorage(itemName) {
   localStorage.setItem('items', JSON.stringify(updatedItems));
 }
 
-
 function removeItem(element, itemName) {
   element.remove();
   removeFromStorage(itemName);
@@ -112,6 +111,15 @@ function saveToStorage(item) {
   localStorage.setItem('items', JSON.stringify(items));
 }
 
+function saveNewOrder() {
+  const updatedItems = Array.from(itemList.children).map((li) => ({
+    name: li.firstChild.textContent,
+    purchased: li.classList.contains('purchased'),
+  }));
+
+  localStorage.setItem('items', JSON.stringify(updatedItems));
+}
+
 function isDuplicate(itemName) {
   return getItemsFromStorage().some((item) => item.name === itemName);
 }
@@ -124,4 +132,12 @@ itemForm.addEventListener('submit', onAddItemSubmit);
 itemList.addEventListener('click', togglePurchased);
 clearButton.addEventListener('click', clearItems);
 filterInput.addEventListener('input', filterItems);
-document.addEventListener('DOMContentLoaded', displayItems);
+document.addEventListener('DOMContentLoaded', () => {
+  displayItems();
+
+  // Initialize SortableJS
+  const sortable = new Sortable(itemList, {
+    animation: 150, // Smooth animation
+    onEnd: saveNewOrder, // Save new order to localStorage
+  });
+});
