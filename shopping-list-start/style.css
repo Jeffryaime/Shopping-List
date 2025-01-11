@@ -113,15 +113,29 @@ form .btn-add:hover {
 }
 
 .list-container li .badge {
-  display: inline-block;
+  display: inline-flex; /* Align content inline and flexibly */
+  justify-content: center; /* Center the badge text */
+  align-items: center; /* Vertically center the text */
   background-color: #4caf50;
   color: white;
   font-size: 12px;
   font-weight: bold;
-  padding: 2px 8px;
+  padding: 2px 8px; /* Keep minimal padding */
   border-radius: 12px;
-  margin-left: 10px;
   text-transform: uppercase;
+  white-space: nowrap; /* Prevent wrapping */
+  width: auto; /* Dynamically adjusts width */
+  min-width: 70px; /* Ensure badges have a reasonable starting size */
+  max-width: 100px; /* Prevent excessive stretching */
+  flex-shrink: 0; /* Prevent shrinking */
+}
+
+.list-container li span {
+  flex: 1; /* Ensures consistent spacing for the item name */
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .list-container li.purchased span {
@@ -130,6 +144,7 @@ form .btn-add:hover {
 }
 
 .list-container li button {
+  flex-shrink: 0;
   background: none;
   border: none;
   color: #e74c3c;
