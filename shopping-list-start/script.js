@@ -17,6 +17,20 @@ darkModeToggle.addEventListener('click', () => {
   localStorage.setItem('darkMode', isDarkMode ? 'enabled' : 'disabled');
 });
 
+function showToast(message, isError = false) {
+  const toastContainer = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = `toast ${isError ? 'error' : ''}`;
+  toast.textContent = message;
+
+  toastContainer.appendChild(toast);
+
+  // Remove the toast after 3 seconds
+  setTimeout(() => {
+    toast.remove();
+  }, 3000);
+}
+
 // Display Items
 function displayItems() {
   const items = getItemsFromStorage();
@@ -27,27 +41,33 @@ function scrollToBottom() {
   itemList.scrollTop = itemList.scrollHeight; // Scroll to the bottom of the list container
 }
 
-// Add Item
+function isDuplicate(name, category) {
+  return getItemsFromStorage().some(
+    (item) => item.name.toLowerCase() === name.toLowerCase() && item.category === category
+  );
+}
+
 function onAddItemSubmit(e) {
   e.preventDefault();
   const newItem = itemInput.value.trim();
   const category = categorySelect.value;
 
   if (!newItem) {
-    alert('Please enter an item.');
+    showToast('Please enter an item.', true); // Show error toast
     return;
   }
 
-  // if (isDuplicate(newItem)) {
-  //   alert('This item already exists!');
-  //   return;
-  // }
+  if (isDuplicate(newItem, category)) {
+    showToast('This item already exists!', true); // Show error toast
+    return;
+  }
 
   const item = { name: newItem, category, purchased: false };
   addItemToDOM(item);
   saveToStorage(item);
   itemInput.value = '';
-  // updateUI();
+
+  showToast('Item added successfully!'); // Show success toast
   scrollToBottom();
 }
 
@@ -123,13 +143,19 @@ function removeItem(li, name) {
   li.remove();
   const items = getItemsFromStorage().filter((item) => item.name !== name);
   localStorage.setItem('items', JSON.stringify(items));
+  showToast(`"${name}" deleted successfully!`);
 }
 
 // Event Listeners
 itemForm.addEventListener('submit', onAddItemSubmit);
 clearButton.addEventListener('click', () => {
-  itemList.innerHTML = '';
-  localStorage.removeItem('items');
+  if (itemList.children.length > 0) {
+    itemList.innerHTML = '';
+    localStorage.removeItem('items');
+    showToast('All items cleared successfully!');
+  } else {
+    showToast('No items to clear!', true);
+  }
 });
 
 // Initialize

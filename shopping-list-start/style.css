@@ -91,6 +91,10 @@ form .btn-add:hover {
   transition: border-color 0.3s ease;
 }
 
+#filter-container input {
+  width: calc(100% - 20px);
+}
+
 #filter-container input:focus, #filter-container select:focus {
   border-bottom: 2px solid #4caf50;
 }
@@ -301,4 +305,32 @@ body.dark-mode .list-container .badge {
 body.dark-mode .list-container {
   scrollbar-color: #4caf50 #1e1e1e; /* Thumb and track */
   scrollbar-width: thin; /* Narrow scrollbar */
+}
+
+#toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+}
+
+.toast {
+  background-color: #4caf50;
+  color: white;
+  padding: 10px 20px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  font-size: 14px;
+  animation: fadeInOut 3s ease;
+}
+
+.toast.error {
+  background-color: #f44336;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translateY(-20px); }
+  10%, 90% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-20px); }
 }
