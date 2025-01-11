@@ -18,6 +18,10 @@ body {
   box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
   border-radius: 10px;
   padding: 20px;
+  max-height: 90vh; /* Ensure the app doesn't exceed viewport height */
+  overflow: hidden; /* Prevent content overflow */
+  display: flex;
+  flex-direction: column;
 }
 
 header {
@@ -95,6 +99,11 @@ form .btn-add:hover {
   list-style: none;
   padding: 0;
   margin: 0;
+  flex-grow: 1; /* Make the list container take available space */
+  overflow-y: auto; /* Enable vertical scrolling */
+  max-height: 300px; /* Adjust based on app height */
+  padding-right: 5px; /* Add padding for better scrollbar spacing */
+  margin-bottom: 10px;
 }
 
 .list-container li {
@@ -157,9 +166,11 @@ form .btn-add:hover {
 }
 
 .btn-clear {
-  width: 100%;
+  margin-top: auto;
+  flex-shrink: 0; /* Prevent the button from shrinking or disappearing */
+  width: 100%; /* Ensure it spans the width of the container */
   background: #e74c3c;
-  color: #fff;
+  color: white;
   border: none;
   border-radius: 5px;
   padding: 10px;

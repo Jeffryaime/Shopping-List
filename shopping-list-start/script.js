@@ -29,6 +29,10 @@ function displayItems() {
   items.forEach(addItemToDOM);
 }
 
+function scrollToBottom() {
+  itemList.scrollTop = itemList.scrollHeight; // Scroll to the bottom of the list container
+}
+
 // Add Item
 function onAddItemSubmit(e) {
   e.preventDefault();
@@ -40,10 +44,17 @@ function onAddItemSubmit(e) {
     return;
   }
 
+  // if (isDuplicate(newItem)) {
+  //   alert('This item already exists!');
+  //   return;
+  // }
+
   const item = { name: newItem, category, purchased: false };
   addItemToDOM(item);
   saveToStorage(item);
   itemInput.value = '';
+  // updateUI();
+  scrollToBottom();
 }
 
 // Add to DOM
