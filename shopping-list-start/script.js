@@ -7,8 +7,27 @@ const clearButton = document.getElementById('clear');
 const filterInput = document.getElementById('filter');
 const darkModeToggle = document.getElementById('dark-mode-toggle');
 
-// Dark Mode Toggle
+// Initialize SortableJS for Drag-and-Drop Sorting
+document.addEventListener('DOMContentLoaded', () => {
+  const sortable = new Sortable(itemList, {
+    animation: 150, // Smooth animation during drag-and-drop
+    onEnd: saveNewOrder, // Triggered when the order changes
+  });
+});
 
+// Save the new order to localStorage
+function saveNewOrder() {
+  const updatedItems = Array.from(itemList.children).map((li) => {
+    const name = li.querySelector('span').textContent.trim();
+    const category = li.querySelector('.badge').textContent.trim();
+    const purchased = li.classList.contains('purchased');
+    return { name, category, purchased };
+  });
+
+  localStorage.setItem('items', JSON.stringify(updatedItems));
+}
+
+// Dark Mode Toggle
 darkModeToggle.addEventListener('click', () => {
   const isDarkMode = document.body.classList.toggle('dark-mode');
   darkModeToggle.innerHTML = isDarkMode
