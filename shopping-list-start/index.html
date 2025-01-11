@@ -29,12 +29,25 @@
             id="item-input"
             placeholder="Add a new item..."
           />
+          <select id="category-select">
+            <option value="Groceries">Groceries</option>
+            <option value="Electronics">Electronics</option>
+            <option value="Clothes">Clothes</option>
+            <option value="Other">Other</option>
+          </select>
           <button type="submit" class="btn-add">
             <i class="fa-solid fa-plus"></i>
           </button>
         </form>
 
         <div id="filter-container">
+          <select id="filter-category">
+            <option value="All">All Categories</option>
+            <option value="Groceries">Groceries</option>
+            <option value="Electronics">Electronics</option>
+            <option value="Clothes">Clothes</option>
+            <option value="Other">Other</option>
+          </select>
           <input type="text" id="filter" placeholder="Search items..." />
         </div>
 

@@ -1,29 +1,13 @@
 const itemForm = document.getElementById('item-form');
 const itemInput = document.getElementById('item-input');
+const categorySelect = document.getElementById('category-select');
+const filterCategory = document.getElementById('filter-category');
 const itemList = document.getElementById('item-list');
 const clearButton = document.getElementById('clear');
 const filterInput = document.getElementById('filter');
 const darkModeToggle = document.getElementById('dark-mode-toggle');
 
-// Check if dark mode was previously enabled
-if (localStorage.getItem('darkMode') === 'enabled') {
-  document.body.classList.add('dark-mode');
-}
-
-darkModeToggle.addEventListener('click', () => {
-  const isDarkMode = document.body.classList.toggle('dark-mode');
-
-  // Update the button text and icon dynamically
-  if (isDarkMode) {
-    darkModeToggle.innerHTML = '<i class="fa-solid fa-sun"></i> Light Mode';
-    localStorage.setItem('darkMode', 'enabled'); // Save to localStorage
-  } else {
-    darkModeToggle.innerHTML = '<i class="fa-solid fa-moon"></i> Dark Mode';
-    localStorage.setItem('darkMode', 'disabled'); // Save to localStorage
-  }
-});
-
-// Ensure the correct text and icon are displayed on page load
+// Dark Mode Toggle
 if (localStorage.getItem('darkMode') === 'enabled') {
   document.body.classList.add('dark-mode');
   darkModeToggle.innerHTML = '<i class="fa-solid fa-sun"></i> Light Mode';
@@ -31,92 +15,88 @@ if (localStorage.getItem('darkMode') === 'enabled') {
   darkModeToggle.innerHTML = '<i class="fa-solid fa-moon"></i> Dark Mode';
 }
 
-// Ensure the correct icon is displayed on page load
-if (localStorage.getItem('darkMode') === 'enabled') {
-  const icon = darkModeToggle.querySelector('i');
-  icon.className = 'fa-solid fa-sun'; // Set to sun icon
-}
+darkModeToggle.addEventListener('click', () => {
+  const isDarkMode = document.body.classList.toggle('dark-mode');
+  darkModeToggle.innerHTML = isDarkMode
+    ? '<i class="fa-solid fa-sun"></i> Light Mode'
+    : '<i class="fa-solid fa-moon"></i> Dark Mode';
+  localStorage.setItem('darkMode', isDarkMode ? 'enabled' : 'disabled');
+});
 
+// Display Items
 function displayItems() {
   const items = getItemsFromStorage();
-  items.forEach((item) => addItemToDOM(item));
-  updateUI();
+  items.forEach(addItemToDOM);
 }
 
+// Add Item
 function onAddItemSubmit(e) {
   e.preventDefault();
-
   const newItem = itemInput.value.trim();
-  if (newItem === '') {
+  const category = categorySelect.value;
+
+  if (!newItem) {
     alert('Please enter an item.');
     return;
   }
 
-  if (isDuplicate(newItem)) {
-    alert('This item already exists!');
-    return;
-  }
-
-  addItemToDOM({ name: newItem, purchased: false });
-  saveToStorage({ name: newItem, purchased: false });
+  const item = { name: newItem, category, purchased: false };
+  addItemToDOM(item);
+  saveToStorage(item);
   itemInput.value = '';
-  updateUI();
 }
 
+// Add to DOM
 function addItemToDOM(item) {
   const li = document.createElement('li');
-  li.textContent = item.name;
-  if (item.purchased) li.classList.add('purchased');
+  const nameSpan = document.createElement('span');
+  nameSpan.textContent = item.name;
+  li.appendChild(nameSpan);
+
+  const badge = document.createElement('span');
+  badge.className = 'badge';
+  badge.textContent = item.category;
+  li.appendChild(badge);
 
   const deleteButton = document.createElement('button');
   deleteButton.innerHTML = '<i class="fa-solid fa-trash"></i>';
   deleteButton.addEventListener('click', () => removeItem(li, item.name));
-
   li.appendChild(deleteButton);
+
+  if (item.purchased) li.classList.add('purchased');
   itemList.appendChild(li);
 }
 
-function togglePurchased(e) {
-  if (e.target.tagName === 'LI') {
-    const itemName = e.target.textContent;
-    e.target.classList.toggle('purchased');
+// Toggle Purchased
+itemList.addEventListener('click', (e) => {
+  if (e.target.tagName === 'SPAN') {
+    const li = e.target.closest('li');
+    const itemName = li.firstChild.textContent;
+    li.classList.toggle('purchased');
     togglePurchasedInStorage(itemName);
   }
-}
+});
 
-function togglePurchasedInStorage(itemName) {
-  const items = getItemsFromStorage();
-  const updatedItems = items.map((item) =>
-    item.name === itemName ? { ...item, purchased: !item.purchased } : item
-  );
-  localStorage.setItem('items', JSON.stringify(updatedItems));
-}
+// Filter by Category
+filterCategory.addEventListener('change', () => {
+  const category = filterCategory.value;
+  Array.from(itemList.children).forEach((item) => {
+    const badge = item.querySelector('.badge').textContent;
+    item.style.display =
+      category === 'All' || badge === category ? 'flex' : 'none';
+  });
+});
 
-function removeItem(element, itemName) {
-  element.remove();
-  removeFromStorage(itemName);
-  updateUI();
-}
-
-function removeFromStorage(itemName) {
-  const items = getItemsFromStorage().filter((item) => item.name !== itemName);
-  localStorage.setItem('items', JSON.stringify(items));
-}
-
-function clearItems() {
-  itemList.innerHTML = '';
-  localStorage.removeItem('items');
-  updateUI();
-}
-
-function filterItems(e) {
+// Filter Items
+filterInput.addEventListener('input', (e) => {
   const search = e.target.value.toLowerCase();
   Array.from(itemList.children).forEach((item) => {
-    const match = item.textContent.toLowerCase().includes(search);
-    item.style.display = match ? 'flex' : 'none';
+    const name = item.firstChild.textContent.toLowerCase();
+    item.style.display = name.includes(search) ? 'flex' : 'none';
   });
-}
+});
 
+// Storage Functions
 function getItemsFromStorage() {
   return JSON.parse(localStorage.getItem('items')) || [];
 }
@@ -127,33 +107,25 @@ function saveToStorage(item) {
   localStorage.setItem('items', JSON.stringify(items));
 }
 
-function saveNewOrder() {
-  const updatedItems = Array.from(itemList.children).map((li) => ({
-    name: li.firstChild.textContent,
-    purchased: li.classList.contains('purchased'),
-  }));
-
-  localStorage.setItem('items', JSON.stringify(updatedItems));
+function togglePurchasedInStorage(name) {
+  const items = getItemsFromStorage().map((item) =>
+    item.name === name ? { ...item, purchased: !item.purchased } : item
+  );
+  localStorage.setItem('items', JSON.stringify(items));
 }
 
-function isDuplicate(itemName) {
-  return getItemsFromStorage().some((item) => item.name === itemName);
+function removeItem(li, name) {
+  li.remove();
+  const items = getItemsFromStorage().filter((item) => item.name !== name);
+  localStorage.setItem('items', JSON.stringify(items));
 }
 
-function updateUI() {
-  clearButton.style.display = itemList.children.length ? 'block' : 'none';
-}
-
+// Event Listeners
 itemForm.addEventListener('submit', onAddItemSubmit);
-itemList.addEventListener('click', togglePurchased);
-clearButton.addEventListener('click', clearItems);
-filterInput.addEventListener('input', filterItems);
-document.addEventListener('DOMContentLoaded', () => {
-  displayItems();
-
-  // Initialize SortableJS
-  const sortable = new Sortable(itemList, {
-    animation: 150, // Smooth animation
-    onEnd: saveNewOrder, // Save new order to localStorage
-  });
+clearButton.addEventListener('click', () => {
+  itemList.innerHTML = '';
+  localStorage.removeItem('items');
 });
+
+// Initialize
+document.addEventListener('DOMContentLoaded', displayItems);
