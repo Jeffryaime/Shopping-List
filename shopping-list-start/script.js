@@ -8,12 +8,6 @@ const filterInput = document.getElementById('filter');
 const darkModeToggle = document.getElementById('dark-mode-toggle');
 
 // Dark Mode Toggle
-if (localStorage.getItem('darkMode') === 'enabled') {
-  document.body.classList.add('dark-mode');
-  darkModeToggle.innerHTML = '<i class="fa-solid fa-sun"></i> Light Mode';
-} else {
-  darkModeToggle.innerHTML = '<i class="fa-solid fa-moon"></i> Dark Mode';
-}
 
 darkModeToggle.addEventListener('click', () => {
   const isDarkMode = document.body.classList.toggle('dark-mode');
