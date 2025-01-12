@@ -85,7 +85,7 @@ function onAddItemSubmit(e) {
   }
 
 
-  const item = { name, category, price };
+  const item = { name, category, price, purchased: false };
   items.push(item); // Add item to the array
   saveToStorage(); // Save to localStorage
   addItemToDOM(item); // Add to the DOM
@@ -99,13 +99,18 @@ function onAddItemSubmit(e) {
 function addItemToDOM(item) {
   const li = document.createElement('li');
   li.className =
-    'flex justify-between items-center p-3 bg-gray-50 rounded shadow-sm border border-gray-200';
+    `flex justify-between items-center p-3 bg-gray-50 rounded shadow-sm border border-gray-200 ${
+      item.purchased ? 'line-through text-gray-400' : ''
+    }`;
 
   li.innerHTML = `
     <span class="item-name">${item.name}</span>
     <span class="item-category text-xs bg-gray-200 px-2 py-1 rounded">${item.category}</span>
     <span class="item-price font-bold">$${item.price.toFixed(2)}</span>
     <div class="flex gap-2">
+      <button class="toggle-purchase text-gray-500 hover:text-gray-600">
+        <i class="fa-solid fa-check"></i>
+      </button>
       <button class="edit text-green-500 hover:text-green-600">
         <i class="fa-solid fa-pencil"></i>
       </button>
@@ -115,6 +120,9 @@ function addItemToDOM(item) {
     </div>
   `;
 
+  const toggleButton = li.querySelector('.toggle-purchase');
+  toggleButton.addEventListener('click', () => togglePurchaseStatus(item, li));
+
   const deleteButton = li.querySelector('.delete');
   deleteButton.addEventListener('click', () => removeItem(li, item.name));
 
@@ -122,6 +130,18 @@ function addItemToDOM(item) {
   editButton.addEventListener('click', () => editItem(item, li));
 
   itemList.appendChild(li);
+}
+
+function togglePurchaseStatus(item, li) {
+  item.purchased = !item.purchased; // Toggle the purchased status
+  saveToStorage(); // Save updated items to localStorage
+
+  // Update the list item styling
+  if (item.purchased) {
+    li.classList.add('line-through', 'text-gray-400');
+  } else {
+    li.classList.remove('line-through', 'text-gray-400');
+  }
 }
 
 function editItem(item, li) {
