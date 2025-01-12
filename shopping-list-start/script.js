@@ -1,3 +1,4 @@
+// Existing Elements
 const itemForm = document.getElementById('item-form');
 const itemInput = document.getElementById('item-input');
 const categorySelect = document.getElementById('category-select');
@@ -7,175 +8,181 @@ const clearButton = document.getElementById('clear');
 const filterInput = document.getElementById('filter');
 const darkModeToggle = document.getElementById('dark-mode-toggle');
 
-// Initialize SortableJS for Drag-and-Drop Sorting
+// Budget Tracking Elements
+const budgetInput = document.getElementById('budget-input');
+const totalBudgetElem = document.getElementById('total-budget');
+const totalSpentElem = document.getElementById('total-spent');
+const remainingBudgetElem = document.getElementById('remaining-budget');
+const taxRateInput = document.getElementById('tax-rate');
+
+// Variables
+let budget = 0;
+let items = [];
+
+// Initialize Drag-and-Drop Sorting
 document.addEventListener('DOMContentLoaded', () => {
   const sortable = new Sortable(itemList, {
-    animation: 150, // Smooth animation during drag-and-drop
-    onEnd: saveNewOrder, // Triggered when the order changes
+    animation: 150,
+    onEnd: saveNewOrder,
   });
+
+  displayItems();
+  updateBudgetDisplay();
 });
 
-// Save the new order to localStorage
+// Save New Order
 function saveNewOrder() {
-  const updatedItems = Array.from(itemList.children).map((li) => {
-    const name = li.querySelector('span').textContent.trim();
-    const category = li.querySelector('.badge').textContent.trim();
-    const purchased = li.classList.contains('purchased');
-    return { name, category, purchased };
+  items = Array.from(itemList.children).map((li) => {
+    const name = li.querySelector('.item-name').textContent.trim();
+    const category = li.querySelector('.item-category').textContent.trim();
+    const price = parseFloat(li.querySelector('.item-price').textContent.replace('$', '')) || 0;
+    return { name, category, price };
   });
 
-  localStorage.setItem('items', JSON.stringify(updatedItems));
+  localStorage.setItem('items', JSON.stringify(items));
+  calculateTotalSpent();
 }
 
 // Dark Mode Toggle
 darkModeToggle.addEventListener('click', () => {
-  const isDarkMode = document.body.classList.toggle('dark-mode');
+  const isDarkMode = document.body.classList.toggle('dark');
   darkModeToggle.innerHTML = isDarkMode
     ? '<i class="fa-solid fa-sun"></i> Light Mode'
     : '<i class="fa-solid fa-moon"></i> Dark Mode';
   localStorage.setItem('darkMode', isDarkMode ? 'enabled' : 'disabled');
 });
 
-function showToast(message, isError = false) {
-  const toastContainer = document.getElementById('toast-container');
-  const toast = document.createElement('div');
-  toast.className = `toast ${isError ? 'error' : ''}`;
-  toast.textContent = message;
-
-  toastContainer.appendChild(toast);
-
-  // Remove the toast after 3 seconds
-  setTimeout(() => {
-    toast.remove();
-  }, 3000);
-}
-
 // Display Items
 function displayItems() {
-  const items = getItemsFromStorage();
-  items.forEach(addItemToDOM);
+  itemList.innerHTML = ''; // Clear the list to prevent duplication
+  items = getItemsFromStorage(); // Retrieve items from storage
+  items.forEach(addItemToDOM); // Add items to the DOM
+  calculateTotalSpent(); // Update budget calculations
 }
 
-function scrollToBottom() {
-  itemList.scrollTop = itemList.scrollHeight; // Scroll to the bottom of the list container
-}
-
+// Check for Duplicate Items
 function isDuplicate(name, category) {
-  return getItemsFromStorage().some(
+  return items.some(
     (item) => item.name.toLowerCase() === name.toLowerCase() && item.category === category
   );
 }
 
+// Add New Item
 function onAddItemSubmit(e) {
   e.preventDefault();
-  const newItem = itemInput.value.trim();
+  const name = itemInput.value.trim();
   const category = categorySelect.value;
+  const price = parseFloat(document.getElementById('price-input').value) || 0;
 
-  if (!newItem) {
-    showToast('Please enter an item.', true); // Show error toast
+  if (!name || price <= 0) {
+    showToast('Please enter a valid item and price.', true);
     return;
   }
 
-  if (isDuplicate(newItem, category)) {
-    showToast('This item already exists!', true); // Show error toast
+  if (isDuplicate(name, category)) {
+    showToast('This item already exists!', true);
     return;
   }
 
-  const item = { name: newItem, category, purchased: false };
-  addItemToDOM(item);
-  saveToStorage(item);
+  const item = { name, category, price };
+  items.push(item); // Add item to the array
+  saveToStorage(); // Save to localStorage
+  addItemToDOM(item); // Add to the DOM
   itemInput.value = '';
-
-  showToast('Item added successfully!'); // Show success toast
-  scrollToBottom();
+  document.getElementById('price-input').value = '';
+  showToast('Item added successfully!');
+  calculateTotalSpent();
 }
 
-// Add to DOM
+// Add Item to DOM
 function addItemToDOM(item) {
   const li = document.createElement('li');
-  const nameSpan = document.createElement('span');
-  nameSpan.textContent = item.name;
-  li.appendChild(nameSpan);
+  li.className =
+    'flex justify-between items-center p-3 bg-gray-50 rounded shadow-sm border border-gray-200';
 
-  const badge = document.createElement('span');
-  badge.className = 'badge';
-  badge.textContent = item.category;
-  li.appendChild(badge);
+  li.innerHTML = `
+    <span class="item-name">${item.name}</span>
+    <span class="item-category text-xs bg-gray-200 px-2 py-1 rounded">${item.category}</span>
+    <span class="item-price font-bold">$${item.price.toFixed(2)}</span>
+    <button class="delete text-red-500 hover:text-red-600"><i class="fa-solid fa-trash"></i></button>
+  `;
 
-  const deleteButton = document.createElement('button');
-  deleteButton.innerHTML = '<i class="fa-solid fa-trash"></i>';
+  const deleteButton = li.querySelector('.delete');
   deleteButton.addEventListener('click', () => removeItem(li, item.name));
-  li.appendChild(deleteButton);
-
-  if (item.purchased) li.classList.add('purchased');
   itemList.appendChild(li);
 }
 
-// Toggle Purchased
-itemList.addEventListener('click', (e) => {
-  if (e.target.tagName === 'SPAN') {
-    const li = e.target.closest('li');
-    const itemName = li.firstChild.textContent;
-    li.classList.toggle('purchased');
-    togglePurchasedInStorage(itemName);
-  }
-});
+// Update Budget Display
+function updateBudgetDisplay() {
+  const spent = items.reduce((sum, item) => sum + item.price, 0);
+  const taxRate = parseFloat(taxRateInput.value) / 100 || 0;
+  const tax = spent * taxRate;
+  const totalSpent = spent + tax;
+  const remaining = budget - totalSpent;
 
-// Filter by Category
-filterCategory.addEventListener('change', () => {
-  const category = filterCategory.value;
-  Array.from(itemList.children).forEach((item) => {
-    const badge = item.querySelector('.badge').textContent;
-    item.style.display =
-      category === 'All' || badge === category ? 'flex' : 'none';
-  });
-});
+  totalBudgetElem.textContent = `$${budget.toFixed(2)}`;
+  totalSpentElem.textContent = `$${totalSpent.toFixed(2)}`;
+  remainingBudgetElem.textContent = `$${remaining.toFixed(2)}`;
+}
 
-// Filter Items
-filterInput.addEventListener('input', (e) => {
-  const search = e.target.value.toLowerCase();
-  Array.from(itemList.children).forEach((item) => {
-    const name = item.firstChild.textContent.toLowerCase();
-    item.style.display = name.includes(search) ? 'flex' : 'none';
-  });
-});
+// Remove Item
+function removeItem(li, name) {
+  items = items.filter((item) => item.name !== name);
+  li.remove();
+  saveNewOrder();
+  calculateTotalSpent();
+  showToast(`"${name}" deleted successfully!`);
+}
+
+// Calculate Total Spent
+function calculateTotalSpent() {
+  updateBudgetDisplay();
+}
 
 // Storage Functions
 function getItemsFromStorage() {
   return JSON.parse(localStorage.getItem('items')) || [];
 }
 
-function saveToStorage(item) {
-  const items = getItemsFromStorage();
-  items.push(item);
+function saveToStorage() {
   localStorage.setItem('items', JSON.stringify(items));
 }
 
-function togglePurchasedInStorage(name) {
-  const items = getItemsFromStorage().map((item) =>
-    item.name === name ? { ...item, purchased: !item.purchased } : item
-  );
-  localStorage.setItem('items', JSON.stringify(items));
-}
+// Show Toast Message
+function showToast(message, isError = false) {
+  const toastContainer = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = `fixed top-5 right-5 bg-${
+    isError ? 'red-500' : 'green-500'
+  } text-white px-4 py-2 rounded shadow-md`;
+  toast.textContent = message;
 
-function removeItem(li, name) {
-  li.remove();
-  const items = getItemsFromStorage().filter((item) => item.name !== name);
-  localStorage.setItem('items', JSON.stringify(items));
-  showToast(`"${name}" deleted successfully!`);
+  toastContainer.appendChild(toast);
+
+  setTimeout(() => {
+    toast.remove();
+  }, 3000);
 }
 
 // Event Listeners
 itemForm.addEventListener('submit', onAddItemSubmit);
+
+budgetInput.addEventListener('input', () => {
+  budget = parseFloat(budgetInput.value) || 0;
+  updateBudgetDisplay();
+});
+
 clearButton.addEventListener('click', () => {
   if (itemList.children.length > 0) {
+    items = [];
     itemList.innerHTML = '';
     localStorage.removeItem('items');
     showToast('All items cleared successfully!');
+    calculateTotalSpent();
   } else {
     showToast('No items to clear!', true);
   }
 });
 
-// Initialize
+// Initialize App
 document.addEventListener('DOMContentLoaded', displayItems);
