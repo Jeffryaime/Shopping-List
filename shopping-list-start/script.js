@@ -84,6 +84,7 @@ function onAddItemSubmit(e) {
     return;
   }
 
+
   const item = { name, category, price };
   items.push(item); // Add item to the array
   saveToStorage(); // Save to localStorage
@@ -104,12 +105,40 @@ function addItemToDOM(item) {
     <span class="item-name">${item.name}</span>
     <span class="item-category text-xs bg-gray-200 px-2 py-1 rounded">${item.category}</span>
     <span class="item-price font-bold">$${item.price.toFixed(2)}</span>
-    <button class="delete text-red-500 hover:text-red-600"><i class="fa-solid fa-trash"></i></button>
+    <div class="flex gap-2">
+      <button class="edit text-green-500 hover:text-green-600">
+        <i class="fa-solid fa-pencil"></i>
+      </button>
+      <button class="delete text-red-500 hover:text-red-600">
+        <i class="fa-solid fa-trash"></i>
+      </button>
+    </div>
   `;
 
   const deleteButton = li.querySelector('.delete');
   deleteButton.addEventListener('click', () => removeItem(li, item.name));
+
+  const editButton = li.querySelector('.edit');
+  editButton.addEventListener('click', () => editItem(item, li));
+
   itemList.appendChild(li);
+}
+
+function editItem(item, li) {
+  // Populate the form fields with the item's current values
+  itemInput.value = item.name;
+  categorySelect.value = item.category;
+  document.getElementById('price-input').value = item.price;
+
+  // Remove the item from the list so it can be updated
+  items = items.filter((i) => i.name !== item.name);
+  li.remove();
+
+  // Update local storage
+  saveToStorage();
+  calculateTotalSpent();
+
+  showToast(`Editing "${item.name}". Make changes and click the "+" button to save.`);
 }
 
 // Update Budget Display
