@@ -121,13 +121,22 @@ function addItemToDOM(item) {
   `;
 
   const toggleButton = li.querySelector('.toggle-purchase');
-  toggleButton.addEventListener('click', () => togglePurchaseStatus(item, li));
-
   const deleteButton = li.querySelector('.delete');
-  deleteButton.addEventListener('click', () => removeItem(li, item.name));
-
   const editButton = li.querySelector('.edit');
-  editButton.addEventListener('click', () => editItem(item, li));
+
+  // Function to handle both click and touch events
+  const addTouchSupport = (element, callback) => {
+    element.addEventListener('click', callback);
+    element.addEventListener('touchstart', (e) => {
+      e.preventDefault(); // Prevent duplicate triggers on touch devices
+      callback();
+    });
+  };
+
+  // Attach events to buttons with touch support
+  addTouchSupport(toggleButton, () => togglePurchaseStatus(item, li));
+  addTouchSupport(deleteButton, () => removeItem(li, item.name));
+  addTouchSupport(editButton, () => editItem(item, li));
 
   itemList.appendChild(li);
 }
