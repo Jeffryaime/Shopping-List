@@ -16,7 +16,7 @@
   </head>
   <body class="bg-gray-100 text-gray-800 min-h-screen flex items-center justify-center">
     <div id="toast-container"></div>
-    <div class="bg-white shadow-lg rounded-lg p-6 max-w-md w-full">
+    <div class="bg-white shadow-lg rounded-lg p-6 max-w-xl w-full">
       <!-- Header -->
       <header class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold text-green-500 flex items-center gap-2">
@@ -54,16 +54,16 @@
       </div>
 
       <!-- Form Section -->
-      <form id="item-form" class="flex gap-2 mb-6">
+      <form id="item-form" class="grid grid-cols-12 gap-3 mb-6">
         <input
           type="text"
           id="item-input"
           placeholder="Add a new item..."
-          class="flex-1 p-2 border rounded focus:ring focus:ring-green-300"
+          class="col-span-5 p-2 border rounded focus:ring focus:ring-green-300"
         />
         <select
           id="category-select"
-          class="p-2 border rounded focus:ring focus:ring-green-300"
+          class="col-span-3 p-2 border rounded focus:ring focus:ring-green-300"
         >
           <option value="Groceries">Groceries</option>
           <option value="Electronics">Electronics</option>
@@ -74,21 +74,21 @@
           type="number"
           id="price-input"
           placeholder="Price (e.g., 20.00)"
-          class="p-2 border rounded focus:ring focus:ring-green-300"
+          class="col-span-3 p-2 border rounded focus:ring focus:ring-green-300"
         />
         <button
           type="submit"
-          class="bg-green-500 hover:bg-green-600 text-white p-2 rounded focus:outline-none"
+          class="col-span-1 bg-green-500 hover:bg-green-600 text-white rounded flex justify-center items-center focus:outline-none"
         >
           <i class="fa-solid fa-plus"></i>
         </button>
       </form>
 
       <!-- Filter Section -->
-      <div id="filter-container" class="flex gap-2 mb-6">
+      <div id="filter-container" class="grid grid-cols-12 gap-3 mb-6">
         <select
           id="filter-category"
-          class="flex-1 p-2 border rounded focus:ring focus:ring-green-300"
+          class="col-span-4 p-2 border rounded focus:ring focus:ring-green-300"
         >
           <option value="All">All Categories</option>
           <option value="Groceries">Groceries</option>
@@ -100,7 +100,7 @@
           type="text"
           id="filter"
           placeholder="Search items..."
-          class="flex-1 p-2 border rounded focus:ring focus:ring-green-300"
+          class="col-span-8 p-2 border rounded focus:ring focus:ring-green-300"
         />
       </div>
 
