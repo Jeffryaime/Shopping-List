@@ -1,3 +1,4 @@
+// Existing Elements
 const itemForm = document.getElementById('item-form');
 const itemInput = document.getElementById('item-input');
 const categorySelect = document.getElementById('category-select');
@@ -7,12 +8,26 @@ const clearButton = document.getElementById('clear');
 const filterInput = document.getElementById('filter');
 const darkModeToggle = document.getElementById('dark-mode-toggle');
 
+// New Elements for Budget Tracking
+const budgetInput = document.getElementById('budget-input');
+const totalBudgetElem = document.getElementById('total-budget');
+const totalSpentElem = document.getElementById('total-spent');
+const remainingBudgetElem = document.getElementById('remaining-budget');
+const taxRateInput = document.getElementById('tax-rate');
+
+// Variables
+let budget = 0;
+let items = [];
+
 // Initialize SortableJS for Drag-and-Drop Sorting
 document.addEventListener('DOMContentLoaded', () => {
   const sortable = new Sortable(itemList, {
-    animation: 150, // Smooth animation during drag-and-drop
-    onEnd: saveNewOrder, // Triggered when the order changes
+    animation: 150,
+    onEnd: saveNewOrder,
   });
+
+  displayItems();
+  updateBudgetDisplay();
 });
 
 // Save the new order to localStorage
@@ -20,11 +35,13 @@ function saveNewOrder() {
   const updatedItems = Array.from(itemList.children).map((li) => {
     const name = li.querySelector('span').textContent.trim();
     const category = li.querySelector('.badge').textContent.trim();
+    const price = parseFloat(li.querySelector('.price').textContent.replace('$', '')) || 0;
     const purchased = li.classList.contains('purchased');
-    return { name, category, purchased };
+    return { name, category, price, purchased };
   });
 
   localStorage.setItem('items', JSON.stringify(updatedItems));
+  calculateTotalSpent();
 }
 
 // Dark Mode Toggle
@@ -36,6 +53,7 @@ darkModeToggle.addEventListener('click', () => {
   localStorage.setItem('darkMode', isDarkMode ? 'enabled' : 'disabled');
 });
 
+// Show Toast Message
 function showToast(message, isError = false) {
   const toastContainer = document.getElementById('toast-container');
   const toast = document.createElement('div');
@@ -44,7 +62,6 @@ function showToast(message, isError = false) {
 
   toastContainer.appendChild(toast);
 
-  // Remove the toast after 3 seconds
   setTimeout(() => {
     toast.remove();
   }, 3000);
@@ -52,93 +69,99 @@ function showToast(message, isError = false) {
 
 // Display Items
 function displayItems() {
-  const items = getItemsFromStorage();
+  items = getItemsFromStorage();
   items.forEach(addItemToDOM);
-}
-
-function scrollToBottom() {
-  itemList.scrollTop = itemList.scrollHeight; // Scroll to the bottom of the list container
+  calculateTotalSpent();
 }
 
 function isDuplicate(name, category) {
-  return getItemsFromStorage().some(
-    (item) => item.name.toLowerCase() === name.toLowerCase() && item.category === category
-  );
+  return items.some((item) => item.name.toLowerCase() === name.toLowerCase() && item.category === category);
 }
 
 function onAddItemSubmit(e) {
   e.preventDefault();
   const newItem = itemInput.value.trim();
   const category = categorySelect.value;
+  const price = parseFloat(document.getElementById('price-input').value) || 0;
 
-  if (!newItem) {
-    showToast('Please enter an item.', true); // Show error toast
+  if (!newItem || price <= 0) {
+    showToast('Please enter a valid item and price.', true);
     return;
   }
 
+  // Check for duplicates
   if (isDuplicate(newItem, category)) {
-    showToast('This item already exists!', true); // Show error toast
+    showToast('This item already exists!', true);
     return;
   }
 
-  const item = { name: newItem, category, purchased: false };
-  addItemToDOM(item);
-  saveToStorage(item);
-  itemInput.value = '';
+  // Create the item object
+  const item = { name: newItem, category, price, purchased: false };
 
-  showToast('Item added successfully!'); // Show success toast
+  // Add the item to the global items array
+  items.push(item);
+
+  // Save the item in localStorage
+  localStorage.setItem('items', JSON.stringify(items));
+
+  // Add the item to the DOM
+  addItemToDOM(item);
+
+  // Clear the input fields
+  itemInput.value = '';
+  document.getElementById('price-input').value = '';
+
+  // Provide feedback to the user
+  showToast('Item added successfully!');
+
+  // Update the budget display
+  calculateTotalSpent();
+
+  // Scroll to the newly added item
   scrollToBottom();
 }
 
 // Add to DOM
 function addItemToDOM(item) {
   const li = document.createElement('li');
-  const nameSpan = document.createElement('span');
-  nameSpan.textContent = item.name;
-  li.appendChild(nameSpan);
+  li.innerHTML = `
+    <span>${item.name}</span>
+    <span class="badge">${item.category}</span>
+    <span class="price">$${item.price.toFixed(2)}</span>
+    <button class="delete"><i class="fa-solid fa-trash"></i></button>
+  `;
 
-  const badge = document.createElement('span');
-  badge.className = 'badge';
-  badge.textContent = item.category;
-  li.appendChild(badge);
-
-  const deleteButton = document.createElement('button');
-  deleteButton.innerHTML = '<i class="fa-solid fa-trash"></i>';
+  const deleteButton = li.querySelector('.delete');
   deleteButton.addEventListener('click', () => removeItem(li, item.name));
-  li.appendChild(deleteButton);
-
-  if (item.purchased) li.classList.add('purchased');
   itemList.appendChild(li);
 }
 
-// Toggle Purchased
-itemList.addEventListener('click', (e) => {
-  if (e.target.tagName === 'SPAN') {
-    const li = e.target.closest('li');
-    const itemName = li.firstChild.textContent;
-    li.classList.toggle('purchased');
-    togglePurchasedInStorage(itemName);
-  }
-});
+function updateBudgetDisplay() {
+  const spent = items.reduce((sum, item) => sum + item.price, 0); // Calculate total spent
+  const taxRate = parseFloat(taxRateInput.value) / 100 || 0; // Get tax rate as a decimal
+  const tax = spent * taxRate; // Calculate tax on total spent
+  const totalSpent = spent + tax; // Include tax in the total spent
+  const remaining = budget - totalSpent; // Calculate remaining budget
 
-// Filter by Category
-filterCategory.addEventListener('change', () => {
-  const category = filterCategory.value;
-  Array.from(itemList.children).forEach((item) => {
-    const badge = item.querySelector('.badge').textContent;
-    item.style.display =
-      category === 'All' || badge === category ? 'flex' : 'none';
-  });
-});
+  // Update the DOM with accurate values
+  totalBudgetElem.textContent = `$${budget.toFixed(2)}`;
+  totalSpentElem.textContent = `$${totalSpent.toFixed(2)}`;
+  remainingBudgetElem.textContent = `$${remaining.toFixed(2)}`;
+}
 
-// Filter Items
-filterInput.addEventListener('input', (e) => {
-  const search = e.target.value.toLowerCase();
-  Array.from(itemList.children).forEach((item) => {
-    const name = item.firstChild.textContent.toLowerCase();
-    item.style.display = name.includes(search) ? 'flex' : 'none';
-  });
-});
+// Remove Item
+function removeItem(li, name) {
+  items = items.filter((item) => item.name !== name);
+  li.remove();
+  localStorage.setItem('items', JSON.stringify(items));
+  calculateTotalSpent();
+  showToast(`"${name}" deleted successfully!`);
+}
+
+// Calculate Total Spent
+function calculateTotalSpent() {
+  updateBudgetDisplay();
+}
 
 // Storage Functions
 function getItemsFromStorage() {
@@ -146,32 +169,26 @@ function getItemsFromStorage() {
 }
 
 function saveToStorage(item) {
-  const items = getItemsFromStorage();
   items.push(item);
   localStorage.setItem('items', JSON.stringify(items));
-}
-
-function togglePurchasedInStorage(name) {
-  const items = getItemsFromStorage().map((item) =>
-    item.name === name ? { ...item, purchased: !item.purchased } : item
-  );
-  localStorage.setItem('items', JSON.stringify(items));
-}
-
-function removeItem(li, name) {
-  li.remove();
-  const items = getItemsFromStorage().filter((item) => item.name !== name);
-  localStorage.setItem('items', JSON.stringify(items));
-  showToast(`"${name}" deleted successfully!`);
+  calculateTotalSpent();
 }
 
 // Event Listeners
 itemForm.addEventListener('submit', onAddItemSubmit);
+
+budgetInput.addEventListener('input', () => {
+  budget = parseFloat(budgetInput.value) || 0;
+  updateBudgetDisplay();
+});
+
 clearButton.addEventListener('click', () => {
   if (itemList.children.length > 0) {
+    items = [];
     itemList.innerHTML = '';
     localStorage.removeItem('items');
     showToast('All items cleared successfully!');
+    calculateTotalSpent();
   } else {
     showToast('No items to clear!', true);
   }

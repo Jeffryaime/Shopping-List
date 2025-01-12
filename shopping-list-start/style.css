@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;700&display=swap');
 
+/* General Styling */
 body {
   margin: 0;
   font-family: 'Poppins', sans-serif;
@@ -13,23 +14,20 @@ body {
 
 .app-container {
   width: 100%;
-  max-width: 450px;
+  max-width: 600px; /* Increased width for better spacing */
   background: #ffffff;
   box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
   border-radius: 10px;
   padding: 20px;
-  max-height: 90vh; /* Ensure the app doesn't exceed viewport height */
-  overflow: hidden; /* Prevent content overflow */
+  max-height: 90vh;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
 
-header {
-  text-align: center;
-  margin-bottom: 20px;
-}
-
 header h1 {
+  text-align: center;
+  margin-bottom: 1rem;
   font-size: 1.8rem;
   color: #4caf50;
   display: flex;
@@ -41,154 +39,119 @@ header h1 i {
   margin-right: 10px;
 }
 
+.budget-section {
+  margin-bottom: 1.5rem;
+  padding: 10px;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.budget-section label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 5px;
+  font-size: 1rem;
+}
+
+.budget-section input {
+  width: 100%;
+  margin: 0.5rem 0;
+  padding: 10px;
+  font-size: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.budget-summary {
+  margin-top: 10px;
+}
+
+.budget-summary p {
+  margin: 0.5rem 0;
+  font-size: 1rem;
+}
+
 form {
   display: flex;
-  margin-bottom: 20px;
-  gap: 10px;
-  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
 }
 
-form input, form select {
-  flex: 1;
-  padding: 10px;
-  font-size: 16px;
+form input,
+form button,
+form select {
+  padding: 0.5rem;
+  font-size: 1rem;
   border: 1px solid #ddd;
-  border-radius: 5px;
-  outline: none;
+  border-radius: 4px;
 }
 
-form input:focus, form select:focus {
-  border-color: #4caf50;
-}
-
-form .btn-add {
-  background: #4caf50;
+form button {
+  background-color: #28a745;
   color: #fff;
   border: none;
-  border-radius: 5px;
-  padding: 10px;
   cursor: pointer;
-  transition: background 0.3s, transform 0.2s;
+  transition: background-color 0.3s ease;
 }
 
-form .btn-add:hover {
-  background: #45a049;
-  transform: scale(1.05);
+form button:hover {
+  background-color: #218838;
 }
 
-#filter-container {
-  margin-bottom: 20px;
-}
-
-#filter-container input, #filter-container select {
+#filter-container input,
+#filter-container select {
   width: 100%;
+  margin-bottom: 0.5rem;
   padding: 10px;
-  font-size: 16px;
-  border: none;
-  border-bottom: 2px solid #ddd;
-  background-color: transparent;
-  outline: none;
+  font-size: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
   transition: border-color 0.3s ease;
 }
 
-#filter-container input {
-  width: calc(100% - 20px);
-}
-
-#filter-container input:focus, #filter-container select:focus {
-  border-bottom: 2px solid #4caf50;
-}
-
-.list-container {
+#item-list {
   list-style: none;
   padding: 0;
   margin: 0;
-  flex-grow: 1; /* Make the list container take available space */
-  overflow-y: auto; /* Enable vertical scrolling */
-  max-height: 300px; /* Adjust based on app height */
-  padding-right: 5px; /* Add padding for better scrollbar spacing */
-  margin-bottom: 10px;
+  flex-grow: 1;
+  overflow-y: auto;
+  max-height: 300px;
 }
 
-.list-container li {
+#item-list li {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #f9f9f9;
-  padding: 10px;
+  padding: 0.5rem;
   border: 1px solid #ddd;
-  border-radius: 5px;
-  margin-bottom: 10px;
-  font-size: 16px;
-  transition: transform 0.2s, background 0.2s;
-  animation: fadeIn 0.3s ease;
-  cursor: pointer;
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
 }
 
-.list-container li .badge {
-  display: inline-flex; /* Align content inline and flexibly */
-  justify-content: center; /* Center the badge text */
-  align-items: center; /* Vertically center the text */
-  background-color: #4caf50;
-  color: white;
-  font-size: 12px;
+#item-list li .price {
+  font-size: 0.9rem;
   font-weight: bold;
-  padding: 2px 8px; /* Keep minimal padding */
-  border-radius: 12px;
-  text-transform: uppercase;
-  white-space: nowrap; /* Prevent wrapping */
-  width: auto; /* Dynamically adjusts width */
-  min-width: 70px; /* Ensure badges have a reasonable starting size */
-  max-width: 100px; /* Prevent excessive stretching */
-  flex-shrink: 0; /* Prevent shrinking */
+  color: #333;
 }
 
-.list-container li span {
-  flex: 1; /* Ensures consistent spacing for the item name */
-  text-align: left;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.list-container li.purchased span {
-  text-decoration: line-through;
-  color: #aaa;
-}
-
-.list-container li button {
-  flex-shrink: 0;
-  background: none;
-  border: none;
-  color: #e74c3c;
-  font-size: 18px;
-  cursor: pointer;
-}
-
-.list-container li button:hover {
-  color: #c0392b;
-}
-
-.btn-clear {
-  margin-top: auto;
-  flex-shrink: 0; /* Prevent the button from shrinking or disappearing */
-  width: 100%; /* Ensure it spans the width of the container */
-  background: #e74c3c;
+#clear-button {
+  display: block;
+  margin: 1rem auto;
+  padding: 0.5rem 1rem;
+  background-color: #dc3545;
   color: white;
   border: none;
-  border-radius: 5px;
-  padding: 10px;
-  font-size: 16px;
+  border-radius: 4px;
   cursor: pointer;
-  transition: background 0.3s, transform 0.2s;
+  transition: background-color 0.3s ease;
 }
 
-.btn-clear:hover {
-  background: #c0392b;
-  transform: scale(1.05);
+#clear-button:hover {
+  background-color: #c82333;
 }
 
-/* General Dark Mode */
+/* Dark Mode Styles */
 body.dark-mode {
   background-color: #121212;
   color: #ffffff;
@@ -196,117 +159,39 @@ body.dark-mode {
 
 body.dark-mode .app-container {
   background-color: #1e1e1e;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+body.dark-mode .budget-section {
+  background-color: #333333;
+  border-color: #444444;
+}
+
+body.dark-mode .budget-section input {
+  background-color: #222222;
   color: #ffffff;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5); /* Slight shadow for depth */
+  border: 1px solid #444444;
 }
 
-/* List Container */
-body.dark-mode .list-container li {
-  background-color: #333333; /* List items background */
-  color: #ffffff; /* Text color */
-  border: 1px solid #555555; /* Proper border for dark mode */
-}
-
-body.dark-mode .list-container li.purchased {
-  text-decoration: line-through;
-  color: #888888; /* Color for purchased items */
-}
-
-/* Badge */
-body.dark-mode .badge {
-  background-color: #4caf50; /* Badge background for dark mode */
-  color: #ffffff; /* Badge text color */
-  border-radius: 20px; /* Rounded corners for badges */
-  padding: 2px 10px; /* Padding for consistent size */
-  font-size: 12px;
-  font-weight: bold;
-}
-
-/* Buttons */
-body.dark-mode .btn-clear {
-  background-color: #c0392b;
-  color: #ffffff;
-}
-
-body.dark-mode .btn-add {
-  background-color: #4caf50;
-  color: #ffffff;
-  border: none;
-  transition: background-color 0.3s ease;
-}
-
-body.dark-mode .btn-add:hover {
-  background-color: #45a049;
-}
-
-body.dark-mode .btn-toggle {
-  background-color: transparent; /* Transparent background */
-  color: #ffffff;
-  border: 1px solid #ffffff;
-  padding: 5px 10px;
-  border-radius: 5px;
-}
-
-body.dark-mode .btn-toggle:hover {
-  background-color: #4caf50;
-  color: #ffffff;
-}
-
-/* Filter and Input */
-body.dark-mode #filter-container input {
-  background-color: #1e1e1e;
-  color: #ffffff;
-  border-bottom: 2px solid #555555;
-}
-
-body.dark-mode #filter-container input:focus {
-  border-bottom-color: #4caf50;
-}
-
-body.dark-mode select {
-  background-color: #1e1e1e; /* Dropdown background */
-  color: #ffffff; /* Dropdown text color */
-  border: 1px solid #555555; /* Dropdown border */
-  padding: 5px;
-  border-radius: 5px;
-}
-
-body.dark-mode select:focus {
-  outline: none;
+body.dark-mode .budget-section input:focus {
   border-color: #4caf50;
 }
 
-/* Clear Button */
-body.dark-mode .btn-clear {
-  background-color: #e74c3c;
+body.dark-mode #item-list li {
+  background-color: #333333;
   color: #ffffff;
-  border: none;
-  transition: background-color 0.3s ease;
+  border-color: #444444;
 }
 
-body.dark-mode .btn-clear:hover {
-  background-color: #c0392b;
+body.dark-mode #clear-button {
+  background-color: #c82333;
 }
 
-/* Alignments */
-body.dark-mode .list-container li {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px;
+body.dark-mode #clear-button:hover {
+  background-color: #a71d2a;
 }
 
-body.dark-mode .list-container .badge {
-  margin-left: auto; /* Push the badge to the end */
-  margin-right: 10px;
-}
-
-/* Optional: Scrollbar in dark mode */
-body.dark-mode .list-container {
-  scrollbar-color: #4caf50 #1e1e1e; /* Thumb and track */
-  scrollbar-width: thin; /* Narrow scrollbar */
-}
-
+/* Toast Notifications */
 #toast-container {
   position: fixed;
   top: 20px;
@@ -330,7 +215,17 @@ body.dark-mode .list-container {
 }
 
 @keyframes fadeInOut {
-  0% { opacity: 0; transform: translateY(-20px); }
-  10%, 90% { opacity: 1; transform: translateY(0); }
-  100% { opacity: 0; transform: translateY(-20px); }
+  0% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  10%,
+  90% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
 }
