@@ -4,6 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Shopping List</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css"
@@ -11,74 +13,110 @@
       crossorigin="anonymous"
       referrerpolicy="no-referrer"
     />
-    <link rel="stylesheet" href="style.css" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
   </head>
-  <body>
+  <body class="bg-gray-100 text-gray-800 min-h-screen flex items-center justify-center">
     <div id="toast-container"></div>
-    <div class="app-container">
-      <header>
-        <h1><i class="fa-solid fa-list-check"></i> My Shopping List</h1>
-        <button id="dark-mode-toggle" class="btn-toggle">
+    <div class="bg-white shadow-lg rounded-lg p-6 max-w-md w-full">
+      <!-- Header -->
+      <header class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-green-500 flex items-center gap-2">
+          <i class="fa-solid fa-list-check"></i> My Shopping List
+        </h1>
+        <button
+          id="dark-mode-toggle"
+          class="text-sm bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-2 rounded focus:outline-none"
+        >
           <i class="fa-solid fa-moon"></i> Dark Mode
         </button>
       </header>
-      <main>
-        <div class="budget-section">
-          <label for="budget-input">Set Budget:</label>
-          <input
-            type="number"
-            id="budget-input"
-            placeholder="Enter your budget..."
-          />
-          <div class="budget-summary">
-            <p>Total Budget: <span id="total-budget">$0</span></p>
-            <p>Total Spent: <span id="total-spent">$0</span></p>
-            <p>Remaining: <span id="remaining-budget">$0</span></p>
-          </div>
-          <label for="tax-rate">Tax Rate (%):</label>
-          <input type="number" id="tax-rate" value="15" />
+
+      <!-- Budget Section -->
+      <div class="mb-6 p-4 bg-gray-50 rounded-lg shadow">
+        <label for="budget-input" class="block text-sm font-medium">Set Budget:</label>
+        <input
+          type="number"
+          id="budget-input"
+          placeholder="Enter your budget..."
+          class="mt-1 p-2 w-full border rounded focus:ring focus:ring-green-300"
+        />
+        <div class="mt-4 space-y-1">
+          <p class="text-sm">Total Budget: <span id="total-budget" class="font-bold">$0</span></p>
+          <p class="text-sm">Total Spent: <span id="total-spent" class="font-bold">$0</span></p>
+          <p class="text-sm">Remaining: <span id="remaining-budget" class="font-bold">$0</span></p>
         </div>
+        <label for="tax-rate" class="block text-sm font-medium mt-4">Tax Rate (%):</label>
+        <input
+          type="number"
+          id="tax-rate"
+          value="15"
+          class="mt-1 p-2 w-full border rounded focus:ring focus:ring-green-300"
+        />
+      </div>
 
-        <form id="item-form">
-          <input
-            type="text"
-            id="item-input"
-            placeholder="Add a new item..."
-          />
-          <select id="category-select">
-            <option value="Groceries">Groceries</option>
-            <option value="Electronics">Electronics</option>
-            <option value="Clothes">Clothes</option>
-            <option value="Other">Other</option>
-          </select>
-          <input
-            type="number"
-            id="price-input"
-            placeholder="Price (e.g., 20.00)"
-          />
-          <button type="submit" class="btn-add">
-            <i class="fa-solid fa-plus"></i>
-          </button>
-        </form>
-
-        <div id="filter-container">
-          <select id="filter-category">
-            <option value="All">All Categories</option>
-            <option value="Groceries">Groceries</option>
-            <option value="Electronics">Electronics</option>
-            <option value="Clothes">Clothes</option>
-            <option value="Other">Other</option>
-          </select>
-          <input type="text" id="filter" placeholder="Search items..." />
-        </div>
-
-        <ul id="item-list" class="list-container"></ul>
-
-        <button id="clear" class="btn-clear">
-          <i class="fa-solid fa-trash"></i> Clear All
+      <!-- Form Section -->
+      <form id="item-form" class="flex gap-2 mb-6">
+        <input
+          type="text"
+          id="item-input"
+          placeholder="Add a new item..."
+          class="flex-1 p-2 border rounded focus:ring focus:ring-green-300"
+        />
+        <select
+          id="category-select"
+          class="p-2 border rounded focus:ring focus:ring-green-300"
+        >
+          <option value="Groceries">Groceries</option>
+          <option value="Electronics">Electronics</option>
+          <option value="Clothes">Clothes</option>
+          <option value="Other">Other</option>
+        </select>
+        <input
+          type="number"
+          id="price-input"
+          placeholder="Price (e.g., 20.00)"
+          class="p-2 border rounded focus:ring focus:ring-green-300"
+        />
+        <button
+          type="submit"
+          class="bg-green-500 hover:bg-green-600 text-white p-2 rounded focus:outline-none"
+        >
+          <i class="fa-solid fa-plus"></i>
         </button>
-      </main>
+      </form>
+
+      <!-- Filter Section -->
+      <div id="filter-container" class="flex gap-2 mb-6">
+        <select
+          id="filter-category"
+          class="flex-1 p-2 border rounded focus:ring focus:ring-green-300"
+        >
+          <option value="All">All Categories</option>
+          <option value="Groceries">Groceries</option>
+          <option value="Electronics">Electronics</option>
+          <option value="Clothes">Clothes</option>
+          <option value="Other">Other</option>
+        </select>
+        <input
+          type="text"
+          id="filter"
+          placeholder="Search items..."
+          class="flex-1 p-2 border rounded focus:ring focus:ring-green-300"
+        />
+      </div>
+
+      <!-- Item List -->
+      <ul
+        id="item-list"
+        class="list-container space-y-3 overflow-y-auto max-h-64"
+      ></ul>
+
+      <!-- Clear Button -->
+      <button
+        id="clear"
+        class="w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded focus:outline-none"
+      >
+        <i class="fa-solid fa-trash"></i> Clear All
+      </button>
     </div>
     <script src="script.js"></script>
   </body>

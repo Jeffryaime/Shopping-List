@@ -8,7 +8,7 @@ const clearButton = document.getElementById('clear');
 const filterInput = document.getElementById('filter');
 const darkModeToggle = document.getElementById('dark-mode-toggle');
 
-// New Elements for Budget Tracking
+// Budget Tracking Elements
 const budgetInput = document.getElementById('budget-input');
 const totalBudgetElem = document.getElementById('total-budget');
 const totalSpentElem = document.getElementById('total-spent');
@@ -19,7 +19,7 @@ const taxRateInput = document.getElementById('tax-rate');
 let budget = 0;
 let items = [];
 
-// Initialize SortableJS for Drag-and-Drop Sorting
+// Initialize Drag-and-Drop Sorting
 document.addEventListener('DOMContentLoaded', () => {
   const sortable = new Sortable(itemList, {
     animation: 150,
@@ -30,105 +30,81 @@ document.addEventListener('DOMContentLoaded', () => {
   updateBudgetDisplay();
 });
 
-// Save the new order to localStorage
+// Save New Order
 function saveNewOrder() {
-  const updatedItems = Array.from(itemList.children).map((li) => {
-    const name = li.querySelector('span').textContent.trim();
-    const category = li.querySelector('.badge').textContent.trim();
-    const price = parseFloat(li.querySelector('.price').textContent.replace('$', '')) || 0;
-    const purchased = li.classList.contains('purchased');
-    return { name, category, price, purchased };
+  items = Array.from(itemList.children).map((li) => {
+    const name = li.querySelector('.item-name').textContent.trim();
+    const category = li.querySelector('.item-category').textContent.trim();
+    const price = parseFloat(li.querySelector('.item-price').textContent.replace('$', '')) || 0;
+    return { name, category, price };
   });
 
-  localStorage.setItem('items', JSON.stringify(updatedItems));
+  localStorage.setItem('items', JSON.stringify(items));
   calculateTotalSpent();
 }
 
 // Dark Mode Toggle
 darkModeToggle.addEventListener('click', () => {
-  const isDarkMode = document.body.classList.toggle('dark-mode');
+  const isDarkMode = document.body.classList.toggle('dark');
   darkModeToggle.innerHTML = isDarkMode
     ? '<i class="fa-solid fa-sun"></i> Light Mode'
     : '<i class="fa-solid fa-moon"></i> Dark Mode';
   localStorage.setItem('darkMode', isDarkMode ? 'enabled' : 'disabled');
 });
 
-// Show Toast Message
-function showToast(message, isError = false) {
-  const toastContainer = document.getElementById('toast-container');
-  const toast = document.createElement('div');
-  toast.className = `toast ${isError ? 'error' : ''}`;
-  toast.textContent = message;
-
-  toastContainer.appendChild(toast);
-
-  setTimeout(() => {
-    toast.remove();
-  }, 3000);
-}
-
 // Display Items
 function displayItems() {
-  items = getItemsFromStorage();
-  items.forEach(addItemToDOM);
-  calculateTotalSpent();
+  itemList.innerHTML = ''; // Clear the list to prevent duplication
+  items = getItemsFromStorage(); // Retrieve items from storage
+  items.forEach(addItemToDOM); // Add items to the DOM
+  calculateTotalSpent(); // Update budget calculations
 }
 
+// Check for Duplicate Items
 function isDuplicate(name, category) {
-  return items.some((item) => item.name.toLowerCase() === name.toLowerCase() && item.category === category);
+  return items.some(
+    (item) => item.name.toLowerCase() === name.toLowerCase() && item.category === category
+  );
 }
 
+// Add New Item
 function onAddItemSubmit(e) {
   e.preventDefault();
-  const newItem = itemInput.value.trim();
+  const name = itemInput.value.trim();
   const category = categorySelect.value;
   const price = parseFloat(document.getElementById('price-input').value) || 0;
 
-  if (!newItem || price <= 0) {
+  if (!name || price <= 0) {
     showToast('Please enter a valid item and price.', true);
     return;
   }
 
-  // Check for duplicates
-  if (isDuplicate(newItem, category)) {
+  if (isDuplicate(name, category)) {
     showToast('This item already exists!', true);
     return;
   }
 
-  // Create the item object
-  const item = { name: newItem, category, price, purchased: false };
-
-  // Add the item to the global items array
-  items.push(item);
-
-  // Save the item in localStorage
-  localStorage.setItem('items', JSON.stringify(items));
-
-  // Add the item to the DOM
-  addItemToDOM(item);
-
-  // Clear the input fields
+  const item = { name, category, price };
+  items.push(item); // Add item to the array
+  saveToStorage(); // Save to localStorage
+  addItemToDOM(item); // Add to the DOM
   itemInput.value = '';
   document.getElementById('price-input').value = '';
-
-  // Provide feedback to the user
   showToast('Item added successfully!');
-
-  // Update the budget display
   calculateTotalSpent();
-
-  // Scroll to the newly added item
-  scrollToBottom();
 }
 
-// Add to DOM
+// Add Item to DOM
 function addItemToDOM(item) {
   const li = document.createElement('li');
+  li.className =
+    'flex justify-between items-center p-3 bg-gray-50 rounded shadow-sm border border-gray-200';
+
   li.innerHTML = `
-    <span>${item.name}</span>
-    <span class="badge">${item.category}</span>
-    <span class="price">$${item.price.toFixed(2)}</span>
-    <button class="delete"><i class="fa-solid fa-trash"></i></button>
+    <span class="item-name">${item.name}</span>
+    <span class="item-category text-xs bg-gray-200 px-2 py-1 rounded">${item.category}</span>
+    <span class="item-price font-bold">$${item.price.toFixed(2)}</span>
+    <button class="delete text-red-500 hover:text-red-600"><i class="fa-solid fa-trash"></i></button>
   `;
 
   const deleteButton = li.querySelector('.delete');
@@ -136,14 +112,14 @@ function addItemToDOM(item) {
   itemList.appendChild(li);
 }
 
+// Update Budget Display
 function updateBudgetDisplay() {
-  const spent = items.reduce((sum, item) => sum + item.price, 0); // Calculate total spent
-  const taxRate = parseFloat(taxRateInput.value) / 100 || 0; // Get tax rate as a decimal
-  const tax = spent * taxRate; // Calculate tax on total spent
-  const totalSpent = spent + tax; // Include tax in the total spent
-  const remaining = budget - totalSpent; // Calculate remaining budget
+  const spent = items.reduce((sum, item) => sum + item.price, 0);
+  const taxRate = parseFloat(taxRateInput.value) / 100 || 0;
+  const tax = spent * taxRate;
+  const totalSpent = spent + tax;
+  const remaining = budget - totalSpent;
 
-  // Update the DOM with accurate values
   totalBudgetElem.textContent = `$${budget.toFixed(2)}`;
   totalSpentElem.textContent = `$${totalSpent.toFixed(2)}`;
   remainingBudgetElem.textContent = `$${remaining.toFixed(2)}`;
@@ -153,7 +129,7 @@ function updateBudgetDisplay() {
 function removeItem(li, name) {
   items = items.filter((item) => item.name !== name);
   li.remove();
-  localStorage.setItem('items', JSON.stringify(items));
+  saveNewOrder();
   calculateTotalSpent();
   showToast(`"${name}" deleted successfully!`);
 }
@@ -168,10 +144,24 @@ function getItemsFromStorage() {
   return JSON.parse(localStorage.getItem('items')) || [];
 }
 
-function saveToStorage(item) {
-  items.push(item);
+function saveToStorage() {
   localStorage.setItem('items', JSON.stringify(items));
-  calculateTotalSpent();
+}
+
+// Show Toast Message
+function showToast(message, isError = false) {
+  const toastContainer = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = `fixed top-5 right-5 bg-${
+    isError ? 'red-500' : 'green-500'
+  } text-white px-4 py-2 rounded shadow-md`;
+  toast.textContent = message;
+
+  toastContainer.appendChild(toast);
+
+  setTimeout(() => {
+    toast.remove();
+  }, 3000);
 }
 
 // Event Listeners
@@ -194,5 +184,5 @@ clearButton.addEventListener('click', () => {
   }
 });
 
-// Initialize
+// Initialize App
 document.addEventListener('DOMContentLoaded', displayItems);
